@@ -10,10 +10,10 @@ LOCATION="Europe/Paris"
 AK=AK_RHEL7
 HG=HG_RHEL7
 REX_USER=remote_user
-#OS=$(sed -e 's/^"//' -e 's/"$//' <<< $(awk -F= '$1=="VERSION_ID" {print $2 ;}' /etc/os-release))
 OS=$(cat /etc/redhat-release | grep -oE '[0-9].[0-9]{1,2}')
 TIMESTAMP=$(date +%Y%m%d%H%M)
 EXT=bak.$TIMESTAMP
+SUDOERS=/etc/sudoers.d/nopasswd
 ######## MAIN ########
 
 ((EUID == 0)) || {
@@ -37,13 +37,12 @@ do
         mv "$repo" "$repo"."$EXT"
 done
 
-printf '==> Getting rid of proxy configurations\n'
-for conf in /etc/{yum,rhsm/rhsm}.conf;
-do
-        cp -a "$conf" "$conf"."$EXT"
-        sed -ri '/^proxy(_|\>)/ s/^/#/' "$conf"
-done
-
+#printf '==> Getting rid of proxy configurations\n'
+#for conf in /etc/{yum,rhsm/rhsm}.conf;
+#do
+#        cp -a "$conf" "$conf"."$EXT"
+#        sed -ri '/^proxy(_|\>)/ s/^/#/' "$conf"
+#done
 
 printf '==> Disabling subscription-manager plugin for yum\n'
 sed -ri '/^enabled\>/ s/=.*/ = 0/' /etc/yum/pluginconf.d/subscription-manager.conf
@@ -55,14 +54,13 @@ rm -f /etc/sysconfig/rhn/systemid
 printf '==> Clean the subscription manager config\n'
 subscription-manager clean
 
-
 printf '==> Create remote execution user\n'
 if id $REX_USER &>/dev/null;
 then
 	printf '==> Remote execution user already exists\n'
 else
 	useradd -m -e '' $REX_USER
-	echo "$REX_USER ALL = (root) NOPASSWD : ALL" >> /etc/sudoers.d/nopasswd_users
+	echo "$REX_USER ALL = (root) NOPASSWD : ALL" >> $SUDOERS
 fi
 
 # The bootstrap script takes care of this
