@@ -12,8 +12,8 @@ HG=HG_RHEL7
 REX_USER=remote_user
 #OS=$(sed -e 's/^"//' -e 's/"$//' <<< $(awk -F= '$1=="VERSION_ID" {print $2 ;}' /etc/os-release))
 OS=$(cat /etc/redhat-release | grep -oE '[0-9].[0-9]{1,2}')
-TIMESTAMP=$(date + '%Y%m%d%H%M' )
-EXT=sat-registration. $TIMESTAMP
+TIMESTAMP=$(date +%Y%m%d%H%M)
+EXT=bak.$TIMESTAMP
 ######## MAIN ########
 
 ((EUID == 0)) || {
