@@ -28,21 +28,11 @@ exit 2
 
 shopt -s nullglob
 
-printf '==> Update subscription-manager before enrolling\n'
-yum update subscription-manager -y
-
 printf '==> Backing up repos configuration\n'
 for repo in /etc/yum.repos.d/*.repo;
 do
         mv "$repo" "$repo"."$EXT"
 done
-
-#printf '==> Getting rid of proxy configurations\n'
-#for conf in /etc/{yum,rhsm/rhsm}.conf;
-#do
-#        cp -a "$conf" "$conf"."$EXT"
-#        sed -ri '/^proxy(_|\>)/ s/^/#/' "$conf"
-#done
 
 printf '==> Disabling subscription-manager plugin for yum\n'
 sed -ri '/^enabled\>/ s/=.*/ = 0/' /etc/yum/pluginconf.d/subscription-manager.conf
@@ -62,12 +52,6 @@ else
 	useradd -m -e '' $REX_USER
 	echo "$REX_USER ALL = (root) NOPASSWD : ALL" >> $SUDOERS
 fi
-
-# The bootstrap script takes care of this
-#printf '==> Install the consumer RPM to download content from the Satellite\n'
-#curl --insecure --output /tmp/katello-ca-consumer-latest.noarch.rpm https://$SATELLITE/pub/katello-ca-consumer-latest.noarch.rpm
-#rpm -i /tmp/katello-ca-consumer-latest.noarch.rpm
-
 
 printf '==> Registering to Satellite\n'
 curl -s http://$SATELLITE/pub/bootstrap.py | python - --server "$SATELLITE" \
